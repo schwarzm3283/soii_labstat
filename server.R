@@ -24,7 +24,7 @@ library(DBI)
 
 
 #------------------db connection------------------  
-source(file.path("config", "database_config.R"),  local = TRUE)$value
+source("database_config.R",  local = TRUE)$value
 
 shinyServer(function(input, output, session) {
   busyIndicator("Loading Data",wait = 0)
