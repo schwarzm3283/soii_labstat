@@ -1,0 +1,163 @@
+#########################################################################II DATA###################################################################
+
+##############reactive variables to get codes from text######################
+ii_area_selected <- reactive({
+  ii.area %>% 
+    filter(area_name %in% input$ii_area) %>% 
+    select(area_code) %>% 
+    unlist(use.names = FALSE)
+})
+
+ii_supersector_selected <- reactive({
+  ii.supersector %>% 
+    filter(supersector_name %in% input$ii_supersector) %>% 
+    select(supersector_code) %>% 
+    unlist(use.names = FALSE)
+})
+
+ii_industry_selected <- reactive({
+  ii.industry %>% 
+    filter(industry_name %in% input$ii_industry) %>% 
+    select(industry_code) %>% 
+    unlist(use.names = FALSE)
+})
+
+ii_casetype_selected <- reactive({
+  ii.casetype %>% 
+    filter(case_type_text %in% input$ii_casetype) %>% 
+    select(case_type_code) %>% 
+    unlist(use.names = FALSE)
+})
+
+ii_datatype_selected <- reactive({
+  ii.datatype %>% 
+    filter(data_type_text %in% input$ii_datatype) %>% 
+    select(data_type_code) %>% 
+    unlist(use.names = FALSE)
+})
+
+
+##############filter inputs series 'ii' (2003 - 2013)#####################
+
+output$ii_1 <- renderUI({
+  selectInput("ii_area", "Area",
+              sort(unique(ii.area$area_name)),
+              selected = input$ii_area)
+})
+
+output$ii_2 <- renderUI({
+  
+  supersector_area_code <- ii.series %>% 
+    filter(area_code %in% ii_area_selected()) %>% 
+    select(supersector_code)
+  
+  supersector_area <- ii.supersector %>% 
+    filter(supersector_code %in% supersector_area_code$supersector_code) %>% 
+    select(supersector_name)
+  
+  selectInput("ii_supersector", "Supersector",
+              sort(unique(supersector_area$supersector_name)),
+              selected = input$ii_supersector)
+})
+
+output$ii_3 <- renderUI({
+  
+  industry_subsector_code <- ii.series %>% 
+    filter(supersector_code %in% ii_supersector_selected() & area_code %in% ii_area_selected()) %>% 
+    select(industry_code)
+  
+  industry_subsector <- ii.industry %>% 
+    filter(industry_code %in% industry_subsector_code$industry_code) %>% 
+    select(industry_name)
+  
+  selectInput("ii_industry", "Industry",
+              sort(unique(industry_subsector$industry_name)),
+              selected = input$ii_industry)
+})
+
+
+output$ii_4 <- renderUI({
+  
+  casetype_industry_code <- ii.series %>% 
+    filter(industry_code %in% ii_industry_selected() & area_code %in% ii_area_selected() & supersector_code %in% ii_supersector_selected()) %>% 
+    select(case_type_code)
+  
+  casetype_industry <- ii.casetype %>% 
+    filter(case_type_code %in% casetype_industry_code$case_type_code) %>% 
+    select(case_type_text)
+  
+  selectInput("ii_casetype", "Case Type",
+              sort(unique(casetype_industry$case_type_text)),
+              selected = input$ii_case_type)
+})
+
+
+output$ii_5 <- renderUI({
+  
+  datatype_casetype_code <- ii.series %>% 
+    filter(case_type_code %in% ii_casetype_selected() & area_code %in% ii_area_selected() & industry_code %in% ii_industry_selected() & supersector_code %in% ii_supersector_selected()) %>% 
+    select(data_type_code)
+  
+  datatype_casetype <- ii.datatype %>% 
+    filter(data_type_code %in% datatype_casetype_code$data_type_code) %>% 
+    select(data_type_text)
+  
+  checkboxGroupInput("ii_datatype", 
+                     "Data Type",
+                     sort(unique(datatype_casetype$data_type_text)),
+                     selected = NULL)
+})
+
+
+#####################observers_ii##########################
+
+observeEvent(input$ii_submit, {
+  withProgress(message = 'Loading Data',
+               detail = 'Thii may take a few seconds...', max = 1, value = 1, {
+                 
+                 if(!is.null(input$ii_datatype)) { 
+                   ii_series_current_id <- paste("IIU",ii_supersector_selected(), ii_industry_selected(), ii_datatype_selected(), ii_casetype_selected(), str_pad(ii_area_selected(), width = 3, pad="0"), sep = "")
+                   
+                   bls_raw <- bls_api(ii_series_current_id, registrationKey = "c739296b855144a696b037d306a18720", startyear = "2003", endyear = "2013") %>% 
+                     select(seriesID, year, value)
+                   
+                   widths =  c(3,3,6,1,1,3)
+                   names = c("pre", "sub", "ind", "data_type_code", "case", "area")
+                   
+                   ii_series_data <- series_split(bls_raw, seriescol = "seriesID", w = widths, n = names) %>% 
+                     left_join(ii.datatype, by = "data_type_code") %>% 
+                     select(year, seriesID, data_type_text, value)
+                   names(ii_series_data) <- c("Year", "SeriesID", "Data Type", "Estimate")
+                   
+                   output$industry_data_table <- renderDataTable(ii_series_data)
+                   updateTabItems(session, "industry_tabbox", "Data")
+                   
+                   #plot_data <- spread(ii_series_data, seriesID, value)
+                   
+                   plot_data <- ii_series_data %>% 
+                     spread(SeriesID, Estimate)
+                   
+                   #Add trace for each series ID
+                   p <- plot_ly()
+                   i=3
+                   while(i<=ncol(plot_data)) {
+                     p <- add_trace(p, x=plot_data$Year, y=plot_data[,colnames(plot_data)[i]], name=colnames(plot_data)[i], type = 'bar')
+                     i = i+1  
+                   }
+                   p <- layout(p, autosize=TRUE, hovermode="closest", showlegend=TRUE)
+                   
+                   #output plot
+                   output$industry_plot <- renderPlotly({
+                     p
+                   })
+                 }
+                 else {
+                   showModal(modalDialog(
+                     title = "Error",
+                     "Please select at least one Data Type!",
+                     easyClose = TRUE,
+                     footer = NULL
+                   ))
+                 }
+               })
+})

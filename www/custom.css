@@ -1,0 +1,131 @@
+hr {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    border: 0;
+    border-top: 3px solid #eee;
+}
+
+caption {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    color: #777;
+    text-align: center;
+    font-size: large;
+    font-weight: bold;
+}
+
+.main-header .logo {
+  font-family: 'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.skin-blue .main-header .logo {
+  background: url('../img/soii-ors/dol_banner_background.png') repeat-x top #990000;
+}
+
+.skin-blue .main-header .navbar {
+  background-image: url(../img/soii-ors/dol_emblem.png), url(../img/soii-ors/dol_banner_background.png);
+  background-position: right, left top;
+  background-repeat: no-repeat, repeat-x;
+}
+
+.skin-blue .main-header .logo:hover {
+  background-color: #900;
+}
+
+.skin-blue .main-header .navbar .sidebar-toggle:hover {
+    background-color: #990000;
+}
+
+.box.box-solid.box-primary>.box-header {
+  color:#fff;
+  background:#666666
+}
+
+.box.box-solid.box-primary{
+border-bottom-color:#666666;
+border-left-color:#666666;
+border-right-color:#666666;
+border-top-color:#666666;
+}
+
+.box-primary{
+border-bottom-color:#666666;
+border-left-color:#666666;
+border-right-color:#666666;
+border-top-color:#666666; 
+}
+
+.box.box-primary{
+border-bottom-color:#666666;
+border-left-color:#666666;
+border-right-color:#666666;
+border-top-color:#666666; 
+}
+
+.box-header {
+  color:#fff;
+  background:#666666
+}
+
+.modal-body {
+    position: relative;
+    padding: 15px;
+    color: red;
+}
+
+.modal-title {
+    margin: 0;
+    line-height: 1.42857143;
+    color: red;
+}
+
+.nav-tabs-custom {
+  border: 1px solid;
+}
+
+.shinysky-busy-indicator {
+  z-index: 1000;
+}
+
+.dataTable .odd { 
+  background-color: #E2E4FF !important; 
+}
+
+.wrapper{
+  overflow: visible !important;
+}
+
+.body{
+  overflow: visible !important;
+}
+#aboutDesc {
+  padding: 20px;
+  font-weight: bold;
+  font-size: large;
+}
+
+
+#is_state_submit, #ii_state_submit {
+    border: 1px solid;
+    transform: translateX(-95%);
+    position: fixed;
+    z-index: 1000;
+}
+
+#is_datadone, #ii_datadone {
+  border: 1px solid;
+  margin-top: 2%;
+}
+
+#is_submit, #ii_submit {
+    border: 1px solid;
+    border-color: #444;
+    margin-top: 5%;
+}
+
+#industry_plot {
+  height: auto !important;
+  width: auto !important;
+}
